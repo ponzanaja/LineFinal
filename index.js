@@ -36,7 +36,6 @@ db.on('child_changed', function (snapshot) {
 
 app.get('/wakeme', function (req,res){
   res.sendStatus(200)
-
 })
 /*
 app.post('/wakeme', function (req,res){
@@ -53,7 +52,7 @@ app.listen(app.get('port'), function () {
 setInterval( () => {
   for(i = 0 ; i < showdata.length ; i++){
     checkNodeDown(showdata[i])
-    console.log(i+" / "+JSON.stringify(showdata[i]))
+    //console.log(i+" / "+JSON.stringify(showdata[i]))
   }
   /*
     showdata.forEach(data => {
