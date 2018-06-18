@@ -16,17 +16,8 @@ let config = {
 }
 
 firebase.initializeApp(config)
-let db = firebase.database().ref('db')
+let db = firebase.database().ref('alive')
 let showdata = []
-
-/*app.get('/wakeme', function (req,res){
-  res.send('I wake up')
-})
-
-app.post('/wakeme', function (req,res){
-  var data = req.body
-  res.sendStatus(200)
-})*/
 
 db.on('child_added', function (snapshot) {
   let item = snapshot.val()
@@ -34,64 +25,84 @@ db.on('child_added', function (snapshot) {
   showdata.push(item)
 })
 
-
 db.on('child_changed', function (snapshot) {
-  let id = snapshot.key
+  let key = snapshot.key
   let data = snapshot.val()
-  let arrTry = []
-  arrTry.push(data)
-  showdata = arrTry
-  /* When instance changed this parth will update your local variable to update data*/
+  data.id = snapshot.key
+  let index = showdata.findIndex(data => data.id === key)
+  showdata.splice(index,1)
+  showdata.push(data)
 })
+
+app.get('/wakeme', function (req,res){
+  res.sendStatus(200)
+
+})
+/*
+app.post('/wakeme', function (req,res){
+  var data = req.body
+  res.sendStatus(200)
+})*/
 
 app.use(bodyParser.json())
 app.set('port', (process.env.PORT || 4000))
 app.listen(app.get('port'), function () {
   console.log('run at port', app.get('port'))
 })
-setTimeout(() => {
-  setInterval(() => {
-    alertTemparature ('Node1')
-    alertInOutBound ('Node1')
-    checkNodeDown ('Node1')
-    },90000)
-},10000)
 
-setInterval(() => {
-   wakeMeup()
-}, 300000) // ev
+setInterval( () => {
+  for(i = 0 ; i < showdata.length ; i++){
+    checkNodeDown(showdata[i])
+    console.log(i+" / "+JSON.stringify(showdata[i]))
+  }
+  /*
+    showdata.forEach(data => {
+      //console.log(data) 
+      checkNodeDown(data)
+    console.log(showdata.length)
+    //console.log(showdata) 
+      // alertTemparature ()
+      // alertInOutBound ()
+      // checkNodeDown ()
+  })*/
+},450000)
 
 
-function alertTemparature (nodeName) {
+function alertTemparature () {
 
   let temparature = showdata.find(info => info.node === nodeName).temparature
   if(temparature[temparature.length-1].valuet*1 >= HIGH_TEMPARATURE ){
     let Temp = JSON.stringify(temparature[temparature.length-1].valuet)
   Temp = Temp.replace(/(")/g,'')
-    let message = " ⚠️⚠️⚠️ High Temparature NOW !!! " + Temp + "*C Check your System now !! ⚠️ ⚠️ ⚠️"
+    let message = " ⚠️⚠️⚠️￼￼￼ High Temparature NOW !!! " + Temp + "*C Check your System now !! ￼￼￼⚠️ ⚠️ ⚠️"
     sendMessageToLine(message)
   }
 }
 
-function checkNodeDown(nodeName) {
-  let nodeStatusAlive = showdata.find(info => info.node === nodeName).alive
-  let nodeStatusAliveShow = showdata.find(info => info.node === nodeName).alive2
-  let dataID =  showdata.find(info => info.node === nodeName).id
-
+async function checkNodeDown(data) {
+  let nodeStatusAlive = data.alive
+  //let nodeStatusAliveShow = showdata.find(info => info.node === nodeName).alive2
+  //let dataID =  showdata.find(info => info.node === nodeName).id
+  //console.log("this is data id : " + dataID)
   if(nodeStatusAlive){
-    firebase.database().ref('db/' + dataID ).update({
+    firebase.database().ref('alive/' + data.id ).update({
       alive: false
     })
   }else{
-    firebase.database().ref('db/' + dataID ).update({
-      alive2: false
-    })
-    let message = "⚠️⚠️⚠️⚠️ Your " + nodeName + " have been down check your system ⚠️⚠️⚠️"
-    sendMessageToLine(message)
+    if(!data.alive2)
+    {
+      let message = "⚠️⚠️⚠️⚠️ Your " + data.nodeName + " have been down check your system ⚠️⚠️⚠️"
+      sendMessageToLine(message)
+    }
+    setTimeout( () => {
+      firebase.database().ref('alive/' + data.id ).update({
+        alive2: false
+      })
+    },10000) 
   }
 }
 
-function alertInOutBound (nodeName) {
+function alertInOutBound () {
   let inBound = showdata.find(info => info.node === nodeName).inbound
   let outBound = showdata.find(info => info.node === nodeName).outbound
   let limitIn = showdata.find(info => info.node === nodeName).limitin
@@ -134,6 +145,15 @@ function sendMessageToLine(messageToSend) {
     (err, httpResponse, body) => {}
   )
 }
-function wakeMeup () {
-  request.get('https://line-alert.herokuapp.com/')
-}
+
+
+/*function retriveFromfirebase () {
+  return new Promise((resolve,reject) => {
+    db.on('child_added', function (snapshot) {
+      let item = snapshot.val()
+      item.id = snapshot.key
+      showdata.push(item)
+    })
+    if(showdata) resolve('pass')
+  })
+}*/
