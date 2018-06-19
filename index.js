@@ -91,13 +91,11 @@ async function checkNodeDown(data) {
        firebase.database().ref('alive/' + data.id ).update({
           alive2: false
         })
-      setTimeout( () => {
       if(!data.alive2)
       {
         let message = "⚠️⚠️⚠️⚠️ Your " + data.nodeName + " have been down check your system ⚠️⚠️⚠️"
         sendMessageToLine(message)
       }
-     },10000)
   }
 }
 
