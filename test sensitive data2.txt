@@ -1,12 +1,1 @@
-<<<<<<< HEAD
-kplus
-password
-
-credential
-=======
-kplus
-password
-
-credential
->>>>>>> master
-encryption
+awwwww
