@@ -19,7 +19,7 @@
   "homepage": "https://github.com/ponzanaja/Line-alert-2#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "express": "^4.16.3",
+    "express": "^4.17.3",
     "firebase": "^5.0.4",
     "request": "^2.87.0"
   }
